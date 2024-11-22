@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
 
     // Music and Gameplay Control
     public AudioSource backgroundMusic;
-    public BeatScoller beatScroller;
+    public BeatController beatControl;
     public bool isGameStarted;
 
     // Scoring Variables
@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
         Instance = this;
 
         ResetGame();
-        totalNotes = FindObjectsOfType<NoteObject>().Length;
+        totalNotes = FindObjectsOfType<NoteHandler>().Length;
     }
 
     private void Update()
@@ -69,7 +69,7 @@ public class GameManager : MonoBehaviour
         if (Input.anyKeyDown)
         {
             isGameStarted = true;
-            beatScroller.hasStarted = true;
+            beatControl.hasStarted = true;
             backgroundMusic.Play();
         }
     }

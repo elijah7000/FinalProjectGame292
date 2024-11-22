@@ -2854,7 +2854,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   backgroundMusic: {fileID: 749594214}
-  beatScroller: {fileID: 2115915484}
+  beatControl: {fileID: 2115915484}
   isGameStarted: 0
   currentScore: 0
   scoreForNormalHit: 100
@@ -7709,7 +7709,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb4d034f600684ff8aedbe424394a86e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  beatTempo: 150
+  beatsPerMinute: 150
   hasStarted: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

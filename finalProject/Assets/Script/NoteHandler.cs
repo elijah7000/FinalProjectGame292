@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NoteObject : MonoBehaviour
+public class NoteHandler : MonoBehaviour
 {
     public bool canBePressed;
     public bool noteHit;
