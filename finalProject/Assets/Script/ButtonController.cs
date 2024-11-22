@@ -4,25 +4,25 @@ using UnityEngine;
 
 public class NewBehaviourScript : MonoBehaviour
 {   
-    private SpriteRenderer theSR;
-    public Sprite defaultImage;
-    public Sprite pressedImage;
+      private SpriteRenderer spriteRenderer;
+    public Sprite defaultSprite;
+    public Sprite pressedSprite;
+    public KeyCode key;
 
-    public KeyCode keyToPress;
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        theSR = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if(Input.GetKeyDown(keyToPress)){
-            theSR.sprite = pressedImage;
+        if (Input.GetKeyDown(key))
+        {
+            spriteRenderer.sprite = pressedSprite;
         }
-        if(Input.GetKeyUp(keyToPress)){
-            theSR.sprite = defaultImage;
+        if (Input.GetKeyUp(key))
+        {
+            spriteRenderer.sprite = defaultSprite;
         }
     }
 }
