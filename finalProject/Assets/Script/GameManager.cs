@@ -5,139 +5,167 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    public AudioSource theMusic;
+    public static GameManager Instance;
 
-    public bool startPlaying; 
+    // Music and Gameplay Control
+    public AudioSource backgroundMusic;
+    public BeatScoller beatScroller;
+    public bool isGameStarted;
 
-    public BeatScoller theBs;
-
-    public static GameManager instance;
-
+    // Scoring Variables
     public int currentScore;
-    public int scorePerNote = 100;
-    public int scorePerGoodNote = 125;
-    public int scorePerPerfections = 150;
+    public int scoreForNormalHit = 100;
+    public int scoreForGoodHit = 125;
+    public int scoreForPerfectHit = 150;
 
-    public int currentMultiplier ;
-    public int multiplierTracker;
+    // Multiplier Variables
+    public int currentMultiplier = 1;
+    private int multiplierProgress;
     public int[] multiplierThresholds;
 
+    // UI Elements
     public Text scoreText;
-    public Text multiText;
+    public Text multiplierText;
 
+    // Hit Tracking
     public float totalNotes;
     public float normalHits;
     public float goodHits;
     public float perfectHits;
     public float missedHits;
 
+    // Results Screen
     public GameObject resultsScreen;
-    public Text percentHitText, normalsText, goodsText, perfectsText, missesText, rankText, finalScoreText;
+    public Text percentHitText;
+    public Text normalHitsText;
+    public Text goodHitsText;
+    public Text perfectHitsText;
+    public Text missedHitsText;
+    public Text rankText;
+    public Text finalScoreText;
 
-    // Start is called before the first frame update
-    void Start(){
-        instance = this;
-
-        scoreText.text = "Score: 0";
-        currentMultiplier = 1;
-
-        totalNotes = FindObjectsOfType<NoteObject>().Length;
-
-    }
-
-    // Update is called once per frame
-    void Update()
+    private void Start()
     {
-        if(!startPlaying){
-            if(Input.anyKeyDown){
-                startPlaying = true;
-                theBs.hasStarted = true;
+        Instance = this;
 
-                theMusic.Play();
-            }
-        }else {
-            if(!theMusic.isPlaying && !resultsScreen.activeInHierarchy){
-                resultsScreen.SetActive(true);
-
-                normalsText.text = "" + normalHits;
-                goodsText.text = goodHits.ToString();
-                perfectsText.text = perfectHits.ToString();
-                missesText.text= "" + missedHits;
-
-                float totalHit = normalHits + goodHits + perfectHits;
-                float percentHit = (totalHit / totalNotes) * 100f;
-
-                percentHitText.text = percentHit.ToString("F1") + "%";
-
-                string rankVal = "F";
-
-                if(percentHit > 20){
-                    rankVal = "D";
-                    if(percentHit > 25){
-                        rankVal = "C";
-                        if(percentHit > 30){
-                            rankVal = "B";
-                            if(percentHit > 35){
-                                rankVal = "A";
-                            }
-                        }
-                    }
-                }
-
-                rankText.text = rankVal;
-
-                finalScoreText.text = currentScore.ToString();
-
-            }
-        }
+        ResetGame();
+        totalNotes = FindObjectsOfType<NoteObject>().Length;
     }
 
-    public void NoteHit(){
-        Debug.Log("Hit On Time");
-
-        if(currentMultiplier - 1 < multiplierThresholds.Length)
+    private void Update()
+    {
+        if (!isGameStarted)
         {
-            multiplierTracker++;
-
-             if(multiplierThresholds[currentMultiplier -1] <= multiplierTracker)
-             {
-            multiplierTracker = 0;
-            currentMultiplier++;
-             }
+            CheckForGameStart();
         }
-
-        multiText.text = "Multiplier: x" + currentMultiplier;
-
-        // currentScore += scorePerNote * currentMultiplier;
-        scoreText.text = "Score: " + currentScore;
+        else if (!backgroundMusic.isPlaying && !resultsScreen.activeInHierarchy)
+        {
+            ShowResults();
+        }
     }
 
-    public void NormalHit(){
-        currentScore += scorePerNote * currentMultiplier;
-        NoteHit();
+    private void CheckForGameStart()
+    {
+        if (Input.anyKeyDown)
+        {
+            isGameStarted = true;
+            beatScroller.hasStarted = true;
+            backgroundMusic.Play();
+        }
+    }
 
+    private void ResetGame()
+    {
+        scoreText.text = "Score: 0";
+        multiplierText.text = "Multiplier: x1";
+        currentScore = 0;
+        currentMultiplier = 1;
+        multiplierProgress = 0;
+    }
+
+    private void ShowResults()
+    {
+        resultsScreen.SetActive(true);
+
+        normalHitsText.text = normalHits.ToString();
+        goodHitsText.text = goodHits.ToString();
+        perfectHitsText.text = perfectHits.ToString();
+        missedHitsText.text = missedHits.ToString();
+
+        float totalHits = normalHits + goodHits + perfectHits;
+        float hitPercentage = (totalHits / totalNotes) * 100f;
+
+        percentHitText.text = $"{hitPercentage:F1}%";
+        rankText.text = CalculateRank(hitPercentage);
+        finalScoreText.text = currentScore.ToString();
+    }
+
+    private string CalculateRank(float percentage)
+    {
+        if (percentage > 35) return "A";
+        if (percentage > 30) return "B";
+        if (percentage > 25) return "C";
+        if (percentage > 20) return "D";
+        return "F";
+    }
+
+    // Note Events
+    public void RegisterNormalHit()
+    {
+        AddScore(scoreForNormalHit);
         normalHits++;
     }
 
-    public void GoodHit(){
-         currentScore += scorePerGoodNote * currentMultiplier;
-        NoteHit();
+    public void RegisterGoodHit()
+    {
+        AddScore(scoreForGoodHit);
         goodHits++;
     }
 
-    public void PerfectHit(){
-         currentScore += scorePerPerfections * currentMultiplier;
-        NoteHit();
+    public void RegisterPerfectHit()
+    {
+        AddScore(scoreForPerfectHit);
         perfectHits++;
     }
-    public void NoteMissed(){
-        Debug.Log("Missed Note");
 
+    public void RegisterMissedNote()
+    {
         currentMultiplier = 1;
-        multiplierTracker = 0;
-    
-        multiText.text = "Multiplier: x" + currentMultiplier;
+        multiplierProgress = 0;
 
+        UpdateMultiplierText();
         missedHits++;
+    }
+
+    private void AddScore(int score)
+    {
+        currentScore += score * currentMultiplier;
+        UpdateMultiplier();
+        UpdateScoreText();
+    }
+
+    private void UpdateMultiplier()
+    {
+        if (currentMultiplier - 1 < multiplierThresholds.Length)
+        {
+            multiplierProgress++;
+            if (multiplierProgress >= multiplierThresholds[currentMultiplier - 1])
+            {
+                multiplierProgress = 0;
+                currentMultiplier++;
+            }
+        }
+
+        UpdateMultiplierText();
+    }
+
+    private void UpdateScoreText()
+    {
+        scoreText.text = $"Score: {currentScore}";
+    }
+
+    private void UpdateMultiplierText()
+    {
+        multiplierText.text = $"Multiplier: x{currentMultiplier}";
     }
 }

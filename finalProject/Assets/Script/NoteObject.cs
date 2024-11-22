@@ -6,55 +6,72 @@ using UnityEngine;
 public class NoteObject : MonoBehaviour
 {
     public bool canBePressed;
-    public bool noteHit;     public KeyCode keyToPress;
+    public bool noteHit;
+    public KeyCode keyToPress;
 
     public GameObject hitEffect, goodEffect, missEffect, perfectEffect;
 
-
     void Update()
     {
-      
         if (Input.GetKeyDown(keyToPress) && canBePressed && !noteHit)
         {
-            noteHit = true; 
-            gameObject.SetActive(false); 
-    
+            noteHit = true;
+            gameObject.SetActive(false);
 
-            if(Mathf.Abs(transform.position.y ) > 219.5  ){
+            float notePosition = Mathf.Abs(transform.position.y);
+
+            if (notePosition > 219.5f)
+            {
                 Debug.Log("Hit");
-                GameManager.instance.NormalHit();
-                Instantiate(hitEffect, transform.position, hitEffect.transform.rotation);
-            }else if( Mathf.Abs(transform.position.y) > 218){
-                  Debug.Log("Good");
-                GameManager.instance.GoodHit();
-                 Instantiate(goodEffect, transform.position, goodEffect.transform.rotation);
-            } else{
+                GameManager.Instance.RegisterNormalHit();
+                SpawnEffect(hitEffect);
+            }
+            else if (notePosition > 218f)
+            {
+                Debug.Log("Good");
+                GameManager.Instance.RegisterGoodHit();
+                SpawnEffect(goodEffect);
+            }
+            else
+            {
                 Debug.Log("Perfect");
-                GameManager.instance.PerfectHit();
-                 Instantiate(perfectEffect, transform.position, perfectEffect.transform.rotation);
+                GameManager.Instance.RegisterPerfectHit();
+                SpawnEffect(perfectEffect);
             }
         }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.tag == "Activater")
+        if (other.CompareTag("Activater"))
         {
             canBePressed = true;
-            noteHit = false; 
+            noteHit = false;
         }
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.tag == "Activater")
+        if (other.CompareTag("Activater"))
         {
-            if (!noteHit) 
+            if (!noteHit)
             {
-                GameManager.instance.NoteMissed();
-                 Instantiate(missEffect, transform.position, missEffect.transform.rotation);
+                GameManager.Instance.RegisterMissedNote();
+                SpawnEffect(missEffect);
             }
-            canBePressed = false; // 노트를 놓쳤으므로 canBePressed 설정 해제
+            canBePressed = false;
+        }
+    }
+
+    private void SpawnEffect(GameObject effect)
+    {
+        if (effect != null)
+        {
+            Instantiate(effect, transform.position, effect.transform.rotation);
+        }
+        else
+        {
+            Debug.LogWarning("Effect not assigned!");
         }
     }
 }
